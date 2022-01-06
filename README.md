@@ -1,10 +1,12 @@
 ## https://lohost.io
 Distributed, decentralized and anonymized local website hosting, or something approximating that
 
+Here's a quick demo video of what it's all about [https://youtu.be/DaK4d4Belwk](https://youtu.be/DaK4d4Belwk)
+
 ## What is lohost?
 Simply put, lohost is a way to serve a website to the internet from any local computer where you install the lohost website client.
 
-You keep all the files on your local computer and pick the subdomain where the website lives (https://{yourApp}.lohost.io).
+You keep all the files on your local computer and pick the subdomain where the website lives: (https://{yourApp}.lohost.io).
 
 ## Getting started
 Download the website client installer from this page and install it on your computer (currently windows only sorry). IMPORTANT, You will need to unblock the setup.exe once downloaded or it will not run.
