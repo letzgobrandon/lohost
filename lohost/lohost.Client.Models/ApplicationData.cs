@@ -1,10 +1,16 @@
 ﻿namespace lohost.Client.Models
 {
     public class ApplicationData
-    {   
+    {
+        private char[] _validChars = new char[] {
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+                'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+                'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
         public ApplicationData()
         {
             ApplicationId = GenerateDefaultAddress();
+
+            ApplicationKey = GenerateDefaultKey();
 
             IsListed = false;
 
@@ -104,16 +110,24 @@
 
         private string GenerateDefaultAddress()
         {
-            char[] chars = new char[] { 
-                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 
-                'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 
-                'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 
             Random r = new Random();
 
             string address = string.Empty;
 
-            for (int i = 0; i<5; i++) address += chars[r.Next(0, chars.Length)];
+            for (int i = 0; i < 5; i++) address += _validChars[r.Next(0, _validChars.Length)];
+
+            return address;
+        }
+
+        private string GenerateDefaultKey()
+        {
+
+            Random r = new Random();
+
+            string address = string.Empty;
+
+            for (int i = 0; i < 8; i++) address += _validChars[r.Next(0, _validChars.Length)];
 
             return address;
         }
