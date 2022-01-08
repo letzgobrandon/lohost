@@ -18,10 +18,12 @@ namespace lohost.API.Hubs
         private static object _listApplicationLock = new object();
 
         private Log _logger;
+        private Dictionary<string, string> _reservedDomains;
 
-        public LocalApplicationHub(Log logger)
+        public LocalApplicationHub(Log logger, Dictionary<string, string> reservedDomains)
         {
             _logger = logger;
+            _reservedDomains = reservedDomains;
         }
 
         public override async Task OnConnectedAsync()
@@ -88,67 +90,71 @@ namespace lohost.API.Hubs
                 { 
                     applicationId = applicationId.ToLower();
 
-                    string[] appPaths;
-
-                    if (!string.IsNullOrEmpty(applicationPaths)) appPaths = applicationPaths.Split(new char[] { '|' });
-                    else appPaths = new string[] { "*" };
-
-                    for (int i = 0; i < appPaths.Length; i++)
+                    if (!_reservedDomains.ContainsKey(applicationId) || 
+                        (!string.IsNullOrEmpty(_reservedDomains[applicationId]) && _reservedDomains[applicationId].Equals(applicationKey)))
                     {
-                        string appPath = appPaths[i].ToLower().TrimStart('/');
+                        string[] appPaths;
 
-                        if (!_ConnectedApplications.ContainsKey(applicationId))
+                        if (!string.IsNullOrEmpty(applicationPaths)) appPaths = applicationPaths.Split(new char[] { '|' });
+                        else appPaths = new string[] { "*" };
+
+                        for (int i = 0; i < appPaths.Length; i++)
                         {
-                            MemoryCache connectedApplicationLockCache = MemoryCache.Default;
+                            string appPath = appPaths[i].ToLower().TrimStart('/');
 
-                            if (connectedApplicationLockCache.Contains(applicationId))
+                            if (!_ConnectedApplications.ContainsKey(applicationId))
                             {
-                                ApplicationConnection applicationConnetion = (ApplicationConnection)connectedApplicationLockCache.Get(applicationId);
+                                MemoryCache connectedApplicationLockCache = MemoryCache.Default;
 
-                                if ((applicationConnetion != null) &&
-                                    (!string.IsNullOrEmpty(applicationKey) && (applicationConnetion.Key == applicationKey)))
+                                if (connectedApplicationLockCache.Contains(applicationId))
                                 {
-                                    if (appPaths.Length > 0)
+                                    ApplicationConnection applicationConnetion = (ApplicationConnection)connectedApplicationLockCache.Get(applicationId);
+
+                                    if ((applicationConnetion != null) &&
+                                        (!string.IsNullOrEmpty(applicationKey) && (applicationConnetion.Key == applicationKey)))
                                     {
-                                        ApplicationConnection applicationConnection = new ApplicationConnection()
+                                        if (appPaths.Length > 0)
                                         {
-                                            Id = applicationId,
-                                            Key = applicationKey
-                                        };
+                                            ApplicationConnection applicationConnection = new ApplicationConnection()
+                                            {
+                                                Id = applicationId,
+                                                Key = applicationKey
+                                            };
 
-                                        applicationConnection.AddApplicationRoute(connectionId, appPath);
+                                            applicationConnection.AddApplicationRoute(connectionId, appPath);
 
-                                        _ConnectedApplications[applicationId] = applicationConnection;
+                                            _ConnectedApplications[applicationId] = applicationConnection;
+                                        }
+
+                                        connectedApplicationLockCache.Remove(applicationId);
+
+                                        addedConnection = true;
                                     }
+                                }
+                                else
+                                {
+                                    ApplicationConnection applicationConnection = new ApplicationConnection()
+                                    {
+                                        Id = applicationId
+                                    };
 
-                                    connectedApplicationLockCache.Remove(applicationId);
+                                    if (!string.IsNullOrEmpty(applicationKey)) applicationConnection.Key = applicationKey;
+
+                                    applicationConnection.AddApplicationRoute(connectionId, appPath);
+
+                                    _ConnectedApplications[applicationId] = applicationConnection;
 
                                     addedConnection = true;
                                 }
                             }
                             else
                             {
-                                ApplicationConnection applicationConnection = new ApplicationConnection()
+                                if (!_ConnectedApplications[applicationId].ApplicationRouteExists(appPath))
                                 {
-                                    Id = applicationId
-                                };
+                                    _ConnectedApplications[applicationId].AddApplicationRoute(connectionId, appPath);
 
-                                if (!string.IsNullOrEmpty(applicationKey)) applicationConnection.Key = applicationKey;
-
-                                applicationConnection.AddApplicationRoute(connectionId, appPath);
-
-                                _ConnectedApplications[applicationId] = applicationConnection;
-
-                                addedConnection = true;
-                            }
-                        }
-                        else
-                        {
-                            if (!_ConnectedApplications[applicationId].ApplicationRouteExists(appPath))
-                            {
-                                _ConnectedApplications[applicationId].AddApplicationRoute(connectionId, appPath);
-
-                                addedConnection = true;
+                                    addedConnection = true;
+                                }
                             }
                         }
                     }

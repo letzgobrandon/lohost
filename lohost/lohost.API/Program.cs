@@ -2,12 +2,31 @@ using lohost.API.Controllers;
 using lohost.API.Hubs;
 using lohost.Logging;
 using lohost.API.Response;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var logger = new Log(Path.Join(Directory.GetCurrentDirectory(), "Logs"), 1);
 
-var localIntegrationHub = new LocalApplicationHub(logger);
+// Retrieve reserved subdomains
+
+Dictionary<string, string> reservedDomains = new Dictionary<string, string>();
+
+var reservedDomainsLocation = Path.Join(Path.Combine(Directory.GetCurrentDirectory(), "reserved.json"));
+
+if (File.Exists(reservedDomainsLocation))
+{
+    try
+    {
+        reservedDomains = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(reservedDomainsLocation));
+    }
+    catch (Exception ex)
+    {
+        logger.Error("Error reading reserved domains", ex);
+    }
+}
+
+var localIntegrationHub = new LocalApplicationHub(logger, reservedDomains);
 
 var internalURL = builder.Configuration["Hosting:InternalURL"];
 var externalURL = builder.Configuration["Hosting:ExternalURL"];
