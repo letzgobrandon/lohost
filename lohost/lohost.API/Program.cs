@@ -64,7 +64,11 @@ builder.Services.AddCors(options =>
 });
 
 // Add SignalR
-builder.Services.AddSignalR(configure => { configure.MaximumReceiveMessageSize = null; });
+builder.Services.AddSignalR(configure => 
+{ 
+    configure.MaximumReceiveMessageSize = null;
+    configure.MaximumParallelInvocationsPerClient = 100;
+});
 builder.Services.AddSingleton<LocalApplicationHub>(t => localIntegrationHub);
 
 // Build the app and configure the required services

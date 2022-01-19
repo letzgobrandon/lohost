@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <UserSecretsId>dotnet-lohost.Client-A34616AF-2945-4693-BC74-620EB6FB4D52</UserSecretsId>
+	<InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>

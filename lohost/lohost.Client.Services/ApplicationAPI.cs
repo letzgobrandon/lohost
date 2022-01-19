@@ -77,13 +77,37 @@ namespace lohost.Client.Services
                     if (_reconnect) await ConnectSignalR();
                 };
 
-                _apiHubConnection.On("GetDocument", async (string transactionId, string document) => await GetDocument(transactionId, document));
+                _apiHubConnection.On("GetDocument", async (string transactionId, string document) =>
+                {
+                    await Task.Factory.StartNew(async () =>
+                    {
+                        await GetDocument(transactionId, document);
+                    });
+                });
 
-                _apiHubConnection.On("GetChunkSize", async (string transactionId) => await GetChunkSize(transactionId));
+                _apiHubConnection.On("GetChunkSize", async (string transactionId) =>
+                {
+                    await Task.Factory.StartNew(async () =>
+                    {
+                        await GetChunkSize(transactionId);
+                    });
+                });
 
-                _apiHubConnection.On("SendDocument", async (string transactionId, string document) => await SendDocument(transactionId, document));
+                _apiHubConnection.On("SendDocument", async (string transactionId, string document) =>
+                {
+                    await Task.Factory.StartNew(async () =>
+                    {
+                        await SendDocument(transactionId, document);
+                    });
+                });
 
-                _apiHubConnection.On("SendDocumentChunk", async (string transactionId, string document, long startRange, long endRange) => await SendDocumentChunk(transactionId, document, startRange, endRange));
+                _apiHubConnection.On("SendDocumentChunk", async (string transactionId, string document, long startRange, long endRange) =>
+                {
+                    await Task.Factory.StartNew(async () =>
+                    {
+                        await SendDocumentChunk(transactionId, document, startRange, endRange);
+                    });
+                });
 
                 await Start();
             }
